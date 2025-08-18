@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>قهوة اليوم — نموذج الجرد</title>
+  <meta name="color-scheme" content="dark">
+  <style>
+    :root{
+      --bg:#0b0b0b; --card:#151515; --line:#242424; --muted:#a9a9a9;
+      --btn:#2b2b2b; --btn-hover:#3a3a3a; --accent:#58c394; --danger:#ff6b6b;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:var(--bg); color:#eee;
+      font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      min-height:100dvh; display:flex; justify-content:center; align-items:stretch;
+    }
+    .wrap{ width:min(880px,100%); padding:16px 16px 120px; }
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:var(--radius); padding:18px; box-shadow:0 8px 28px rgba(0,0,0,.25);
+    }
+    header{
+      display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; margin-bottom:12px;
+    }
+    .logo{ width:42px; height:42px; border-radius:10px; background:#0f0f0f; border:1px solid #2b2b2b; display:grid; place-items:center; }
+    .logo svg{ width:22px; height:22px; fill:var(--accent); }
+    .brand .title{ font-weight:700; font-size:18px }
+    .muted{ color:var(--muted) }
+
+    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    @media (max-width:700px){ .grid{ grid-template-columns:1fr } }
+
+    .label{ font-size:12px; color:var(--muted) }
+    input[type="text"], input[type="search"]{
+      width:100%; padding:12px 14px; border:1px solid #2b2b2b; border-radius:12px; background:#0f0f0f; color:#eee; font-size:15px;
+    }
+
+    .filters{ display:flex; gap:8px; margin:12px 0 4px; flex-wrap:wrap; }
+    .chip{
+      border:1px solid #2b2b2b; background:#0f0f0f; color:#eee;
+      padding:7px 12px; border-radius:999px; font-size:13px; cursor:pointer; transition:.15s;
+    }
+    .chip:hover{ background:#161616 }
+    .chip.active{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; color:#d5ffe9; }
+
+    .list{ margin-top:6px }
+    .product{
+      display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center;
+      padding:12px 0; border-bottom:1px solid var(--line);
+    }
+    .sku{ font-size:12px; color:var(--muted) }
+    .name{ font-size:14px; margin:2px 0 0 }
+    .meta{ font-size:12px; color:var(--muted) }
+
+    .qty{
+      display:flex; align-items:center; gap:8px; justify-self:end;
+      background:#0f0f0f; border:1px solid #2c2c2c; border-radius:12px; padding:6px;
+    }
+    .qty button{ appearance:none; border:0; border-radius:10px; background:var(--btn); color:#fff; padding:8px 12px; font-size:18px; }
+    .qty button:hover{ background:var(--btn-hover) }
+    .qty input{ width:74px; text-align:center; font-variant-numeric:tabular-nums; font-size:16px; padding:8px; background:transparent; border:0 }
+
+    .sticky{
+      position:fixed; inset-inline:0; bottom:0;
+      background:linear-gradient(180deg, rgba(11,11,11,0) 0%, rgba(11,11,11,0.6) 18px, rgba(11,11,11,1) 34px);
+      padding:20px 16px; display:flex; justify-content:center;
+    }
+    .bar{
+      width:min(880px,100%); background:var(--card); border:1px solid var(--line);
+      border-radius:16px; padding:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .btn{ background:var(--btn); color:#fff; border:1px solid #2b2b2b; padding:9px 12px; border-radius:10px; cursor:pointer; font-size:13px; }
+    .btn-primary{ background:var(--accent); color:#0b0b0b; border:0; border-radius:12px; padding:12px 18px; font-size:15px; cursor:pointer; }
+    .btn-primary[disabled]{ opacity:.6; cursor:not-allowed }
+
+    .toast{
+      position:fixed; top:14px; inset-inline:14px; margin:auto; width:min(640px,100%); z-index:10;
+      background:#0f1a0f; color:#d4ffd4; border:1px solid #203520; border-radius:12px; padding:10px 12px; display:none;
+    }
+    .toast.err{ background:#1a0f0f; color:#ffd4d4; border-color:#352020 }
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M18 8h1a3 3 0 0 1 0 6h-1a6 6 0 0 1-6 5H9a6 6 0 0 1-6-6V8h15Zm1 2v4h0a2 2 0 1 0 0-4ZM7 3a1 1 0 0 1 1 1v1a2 2 0 0 0 2 2 1 1 0 1 1 0 2A4 4 0 0 1 6 5V4a1 1 0 0 1 1-1Zm5 0a1 1 0 0 1 1 1v1a2 2 0 0 0 2 2 1 1 0 1 1 0 2 4 4 0 0 1-4-4V4a1 1 0 0 1 1-1Z"/></svg>
+        </div>
+        <div class="brand">
+          <div class="title">قهوة اليوم — نموذج الجرد</div>
+          <div id="ctx" class="muted">—</div>
+        </div>
+        <div id="net" class="muted">—</div>
+      </header>
+
+      <div class="grid">
+        <div>
+          <div class="label">اسم الموظف</div>
+          <input id="user" type="text" placeholder="مثال: أحمد" autocomplete="name" required>
+        </div>
+        <div>
+          <div class="label">ملاحظة (اختياري)</div>
+          <input id="note" type="text" placeholder="مثال: نهاية الوردية / إعادة ترتيب">
+        </div>
+      </div>
+
+      <!-- فلاتر -->
+      <div class="filters" id="filters"></div>
+
+      <!-- بحث -->
+      <div class="grid">
+        <div>
+          <div class="label">بحث</div>
+          <input id="search" type="search" placeholder="ابحث باسم الصنف أو SKU">
+        </div>
+        <div class="label" style="align-self:end">—</div>
+      </div>
+
+      <!-- قائمة المنتجات -->
+      <div id="list" class="list"></div>
+      <div class="muted" style="font-size:12px;margin-top:8px">
+        يتم الحفظ محليًا تلقائيًا. في حال انقطاع الإنترنت ستظهر رسالة وسيُعاد الإرسال لاحقًا.
+      </div>
+    </div>
+  </div>
+
+  <!-- شريط سفلي -->
+  <div class="sticky">
+    <div class="bar">
+      <div>الأسطر: <b id="rowsCount">0</b> | الإجمالي: <b id="total">0</b></div>
+      <div style="margin-inline-start:auto" id="context">—</div>
+      <button id="previewBtn" class="btn">مراجعة</button>
+      <button id="submitBtn" class="btn-primary">إرسال الجرد</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ========= عدّل هذا لاحقًا عند الحاجة =========
+  const ENDPOINT = "/api/submit"; // مثال: "https://api-inv.nmkqr.org/api/submit"
+  // =============================================
+
+  const STORAGE_KEY = "inv-draft";
+  const QUEUE_KEY = "inv-queue";
+
+  // سياق من الـQR
+  const params  = new URLSearchParams(location.search);
+  const client  = params.get("client")  || "day-coffee";
+  const branch  = params.get("branch")  || "riyadh-01";
+  const zone    = params.get("zone")    || "bar";
+  const station = params.get("station") || "A";
+
+  // منتجات (مثال قهوة)
+  const products = [
+    // مستهلكات
+    { id:"CUP08",  sku:"CUP-08",  name:"أكواب ورقية 8oz",    unit:"حزمة",  cat:"مستهلكات" },
+    { id:"CUP12",  sku:"CUP-12",  name:"أكواب ورقية 12oz",   unit:"حزمة",  cat:"مستهلكات" },
+    { id:"CUP16",  sku:"CUP-16",  name:"أكواب ورقية 16oz",   unit:"حزمة",  cat:"مستهلكات" },
+    { id:"LID12",  sku:"LID-12",  name:"أغطية أكواب 12/16oz",unit:"حزمة",  cat:"مستهلكات" },
+    { id:"STIR",   sku:"STIR",    name:"محركات خشبية",       unit:"حزمة",  cat:"مستهلكات" },
+    { id:"NAPK",   sku:"NAPK",    name:"مناديل",             unit:"كرتون", cat:"مستهلكات" },
+
+    // حبوب
+    { id:"BE-ESP", sku:"BE-ESP",  name:"حبوب إسبرسو",        unit:"كجم",   cat:"حبوب" },
+    { id:"BE-SIG", sku:"BE-SIG",  name:"حبوب توقيع الجنرال", unit:"كجم",   cat:"حبوب" },
+
+    // ألبان
+    { id:"MLK-R",  sku:"MLK-R",   name:"حليب عادي 1 لتر",    unit:"علبة",  cat:"ألبان" },
+    { id:"MLK-A",  sku:"MLK-A",   name:"حليب بديل 1 لتر",    unit:"علبة",  cat:"ألبان" },
+
+    // سيرب
+    { id:"SIR-V",  sku:"SIR-V",   name:"سيرب فانيلا 1 لتر",  unit:"زجاجة", cat:"سيرب" },
+    { id:"SIR-C",  sku:"SIR-C",   name:"سيرب كاراميل 1 لتر", unit:"زجاجة", cat:"سيرب" }
+  ];
+
+  // DOM
+  const toastEl = document.getElementById("toast");
+  const netEl   = document.getElementById("net");
+  const ctxEl   = document.getElementById("ctx");
+  const context = document.getElementById("context");
+  const filters = document.getElementById("filters");
+  const listEl  = document.getElementById("list");
+  const rowsEl  = document.getElementById("rowsCount");
+  const totalEl = document.getElementById("total");
+  const searchEl= document.getElementById("search");
+  const userEl  = document.getElementById("user");
+  const noteEl  = document.getElementById("note");
+  const previewBtn = document.getElementById("previewBtn");
+  const submitBtn  = document.getElementById("submitBtn");
+
+  // ترويسة
+  ctxEl.textContent = `العميل: ${client}`;
+  context.textContent = `${branch} • ${zone} • ${station}`;
+
+  // حالة الشبكة
+  function setNet(){ netEl.textContent = navigator.onLine ? "متصل" : "بدون إنترنت"; }
+  window.addEventListener("online", setNet);
+  window.addEventListener("offline", setNet);
+  setNet();
+
+  // فلاتر
+  const cats = [...new Set(products.map(p=>p.cat))];
+  let active = "الكل";
+
+  function setActive(cat){
+    active = cat;
+    renderFilters();   // 🔥 إعادة رسم الفلاتر لتلوين الزر المختار
+    renderList();      // وإعادة تصفية القائمة
+  }
+
+  function renderFilters(){
+    filters.innerHTML = "";
+    makeChip("الكل", active==="الكل");
+    cats.forEach(c=> makeChip(c, active===c));
+  }
+  function makeChip(text, isOn){
+    const b = document.createElement("button");
+    b.type="button";
+    b.className="chip"+(isOn?" active":"");
+    b.textContent=text;
+    b.onclick = ()=> setActive(text);
+    filters.appendChild(b);
+  }
+
+  // قائمة المنتجات
+  function renderList(){
+    listEl.innerHTML="";
+    const q = (searchEl.value||"").trim().toLowerCase();
+    const data = products.filter(p => (active==="الكل" || p.cat===active) && (!q || (p.name+p.sku).toLowerCase().includes(q)));
+    let count=0;
+    data.forEach(p => { listEl.appendChild(row(p, getQty(p.id))); count++; });
+    rowsEl.textContent = count; recalc();
+  }
+
+  function row(p, qty=0){
+    const el = document.createElement("div"); el.className="product"; el.dataset.id=p.id;
+
+    const left = document.createElement("div");
+    const sku  = document.createElement("div"); sku.className="sku";  sku.textContent=`${p.sku} • ${p.cat}`;
+    const name = document.createElement("div"); name.className="name"; name.textContent=p.name;
+    const meta = document.createElement("div"); meta.className="meta"; meta.textContent=`الوحدة: ${p.unit}`;
+    left.appendChild(sku); left.appendChild(name); left.appendChild(meta);
+
+    const box = document.createElement("div"); box.className="qty";
+    const dec = document.createElement("button"); dec.type="button"; dec.textContent="−";
+    const inp = document.createElement("input");  inp.type="number"; inp.min="0"; inp.value=qty;
+    const inc = document.createElement("button"); inc.type="button"; inc.textContent="+";
+
+    const step = d => { inp.value = Math.max(0,(parseInt(inp.value||"0",10)||0)+d); recalc(); saveDraft(); };
+    dec.onclick = ()=> step(-1); inc.onclick = ()=> step(+1);
+    inp.oninput = ()=>{ inp.value = inp.value.replace(/[^\d]/g,''); recalc(); saveDraft(); };
+
+    box.appendChild(dec); box.appendChild(inp); box.appendChild(inc);
+    el.appendChild(left); el.appendChild(box);
+    return el;
+  }
+
+  function allRows(){ return [...listEl.querySelectorAll(".product")]; }
+  function rid(r){ return r.dataset.id; }
+  function val(r){ return parseInt(r.querySelector("input").value||"0",10)||0; }
+  function getQty(id){
+    const d = loadDraft();
+    return d?.items?.find(i=>i.product_id===id)?.counted_qty ?? 0;
+  }
+
+  function recalc(){
+    const sum = allRows().reduce((a,r)=> a + val(r), 0);
+    totalEl.textContent = sum;
+  }
+
+  // مسودة محلية
+  function key(){ return `${STORAGE_KEY}:${client}:${branch}:${zone}:${station}`; }
+  function saveDraft(){
+    const payload = {
+      user: userEl.value || "", note: noteEl.value || "",
+      client, branch, zone, station,
+      items: allRows().map(r => ({ product_id: rid(r), counted_qty: val(r) }))
+    };
+    localStorage.setItem(key(), JSON.stringify(payload));
+  }
+  function loadDraft(){
+    try { return JSON.parse(localStorage.getItem(key())||"null") } catch { return null }
+  }
+
+  // تهيئة
+  searchEl.addEventListener("input", renderList);
+  userEl.addEventListener("input", saveDraft);
+  noteEl.addEventListener("input", saveDraft);
+
+  renderFilters();               // ← ارسم الفلاتر أولًا
+  const d = loadDraft();         // ثم حمّل المسودة
+  if(d?.user) userEl.value=d.user;
+  if(d?.note) noteEl.value=d.note;
+  renderList();
+
+  // إرسال
+  previewBtn.addEventListener("click", ()=> showToast("راجِع السطور ثم اضغط إرسال."));
+  submitBtn.addEventListener("click", sendNow);
+
+  async function sendNow(){
+    const user = (userEl.value||"").trim();
+    if(!user){ userEl.focus(); return showToast("من فضلك أدخل اسم الموظف", true); }
+    const items = allRows().map(r => ({ product_id: rid(r), counted_qty: val(r) })).filter(i => i.counted_qty > 0);
+    if(!items.length){ return showToast("لا توجد عناصر أكبر من صفر", true); }
+
+    submitBtn.disabled = true; submitBtn.textContent = "جارٍ الإرسال…";
+    const payload = {
+      ts: new Date().toISOString(), user, note: noteEl.value || "",
+      client, branch, zone, station, items
+    };
+
+    try{
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error("HTTP " + res.status);
+
+      // نجاح → تصفير
+      localStorage.removeItem(key());
+      allRows().forEach(r => r.querySelector("input").value = 0);
+      userEl.value = ""; noteEl.value = ""; recalc();
+      showToast("تم استلام الجرد ✅");
+    }catch(e){
+      showToast("تعذّر الإرسال — تحقق من الاتصال أو عدّل ENDPOINT لاحقًا", true);
+    }finally{
+      submitBtn.disabled = false; submitBtn.textContent = "إرسال الجرد";
+    }
+  }
+
+  // إشعارات
+  function showToast(msg, err=false){
+    toastEl.textContent = msg;
+    toastEl.className = "toast" + (err ? " err" : "");
+    toastEl.style.display = "block";
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toastEl.style.display="none", 3200);
+  }
+})();
+</script>
+</body>
+</html>
